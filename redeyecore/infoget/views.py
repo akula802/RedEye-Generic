@@ -27,7 +27,7 @@ from .tokens import account_activation_token
 # Load the .env
 env = environ.Env()
 env.read_env(sys.path[0] + '/redeyecore/.env')
-#from .Models import GateServers
+#from .Models import LobServers
 
 
 
@@ -166,14 +166,14 @@ def home(request):
 
     # Got a cursor, now get the existing auth token from the database via SELECT query
     app_db_cursor.reset()
-    app_db_cursor.execute("SELECT MAX(app_run_number) FROM redshift.infoget_gateservers")
+    app_db_cursor.execute("SELECT MAX(app_run_number) FROM redshift.infoget_lobservers")
     app_run_number = str(app_db_cursor.fetchone()[0])
 
 
     # Get VSA agents missing the GCS Custom Fields
     # These need to have the GCS scripts run on them
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, rmm_gcc_file_type, rmm_gcc_computer_name, rmm_last_checkin FROM redshift.infoget_gateservers WHERE app_run_number = {} AND ((rmm_gcc_file_type IS NULL OR rmm_gcc_file_type = '') OR (rmm_gcc_computer_name IS NULL OR rmm_gcc_computer_name = ''))".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, rmm_gcc_file_type, rmm_gcc_computer_name, rmm_last_checkin FROM redshift.infoget_lobservers WHERE app_run_number = {} AND ((rmm_gcc_file_type IS NULL OR rmm_gcc_file_type = '') OR (rmm_gcc_computer_name IS NULL OR rmm_gcc_computer_name = ''))".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
     agents_with_custom_field_problems = app_db_cursor.fetchall()
     agents_missing_custom_field.append(agents_with_custom_field_problems)
@@ -181,10 +181,10 @@ def home(request):
 
 
 
-    # Get gate servers that are offline in Redline, but online in Kaseya
+    # Get LOB servers that are offline in Redline, but online in Kaseya
     # These need to have the AppService restarted and checked
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, red_location, red_last_gate_query, red_last_gate_update  FROM redshift.infoget_gateservers WHERE app_run_number = {} AND (red_agent_is_offline = TRUE AND rmm_agent_is_offline = FALSE) ORDER BY red_last_gate_query ASC".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, red_location, red_last_lob_query, red_last_lob_update  FROM redshift.infoget_lobservers WHERE app_run_number = {} AND (red_agent_is_offline = TRUE AND rmm_agent_is_offline = FALSE) ORDER BY red_last_lob_query ASC".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
     redline_issues = app_db_cursor.fetchall()
     agents_with_redline_issues.append(redline_issues)
@@ -192,10 +192,10 @@ def home(request):
 
 
 
-    # Get gate servers that are offline in Kaseya, but online in Redline
+    # Get LOB servers that are offline in Kaseya, but online in Redline
     # These need to be rebooted by an FS
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, red_location, rmm_last_checkin, red_last_gate_query  FROM redshift.infoget_gateservers WHERE app_run_number = {} AND (red_agent_is_offline = FALSE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, red_location, rmm_last_checkin, red_last_lob_query  FROM redshift.infoget_lobservers WHERE app_run_number = {} AND (red_agent_is_offline = FALSE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
     kaseya_issues = app_db_cursor.fetchall()
     agents_with_kaseya_issues.append(kaseya_issues)
@@ -203,52 +203,15 @@ def home(request):
 
 
 
-    # Get gate servers that are offline in Kaseya AND offline in Redline
+    # Get LOB servers that are offline in Kaseya AND offline in Redline
     # These need to be investigated for ISP issues, etc
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, red_location, rmm_last_checkin, red_last_gate_query  FROM redshift.infoget_gateservers WHERE app_run_number = {} AND (red_agent_is_offline = TRUE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, red_location, rmm_last_checkin, red_last_lob_query  FROM redshift.infoget_lobservers WHERE app_run_number = {} AND (red_agent_is_offline = TRUE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
     totally_offline = app_db_cursor.fetchall()
     agents_totally_offline.append(totally_offline)
     agents_totally_offline_count = len(agents_totally_offline[0])
 
-
-
-
-
-    # ### REDLINE ###
-    # # Instantiate the 'postgres_database' class and connect to Redline
-    # # Get a cursor with a GLOBAL scope, for use later
-    # try:
-        
-    #     # Get the connection info from .env
-    #     redline_db_host = env('redline_db_host')
-    #     redline_db_port = env('redline_db_port')
-    #     redline_db_username = env('redline_db_username')
-    #     redline_db_password = env('redline_db_password')
-    #     redline_db_database = env('redline_db_database')
-
-
-    #     # Connect to Redline and get a cursor
-    #     redline_db_connect = infoget_classes.postgres_database(redline_db_host, redline_db_port, redline_db_username, redline_db_password, redline_db_database)
-    #     redline_db_cursor = redline_db_connect.get_cursor(redline_db_connect)
-
-    #     # For error check in home.html
-    #     redline_db_connect_error = "Redline DB Connect OK"
-    #     redline_test_query_result = redline_db_cursor
-
-    # except Exception as e1:
-    #     redline_db_connect_error = e1
-    #     redline_test_query_result = e1
-
-
-
-
-    # Do some stuff
-    # Offline in Redline, online in VSA
-    # Offline in VSA, online in Redline
-    # Offline in both, sorted by most distant check-in
-    # VSA agents missing custom fields
 
 
 

@@ -1,0 +1,80 @@
+# Setting up a new Ubuntu web server for Django
+
+# Install pip etc
+apt install python3-pip
+
+# Install venv
+apt install python3-venv
+
+# For pip install pycairo
+apt install libcairo2-dev
+
+# For pip install mysqlclient
+apt install python3-dev default-libmysqlclient-dev build-essential
+
+# For pip install psycopg2
+apt install libpq-dev
+
+# Install MySQL Server
+apt install mysql-server
+
+# Allow MySQL Workbench connections from another computer
+# https://www.digitalocean.com/community/tutorials/how-to-allow-remote-access-to-mysql
+# File location: /etc/mysql/mysql.conf.d/mysqld.cnf
+# Set this value: bind_address = 192.168.0.10
+# Reload MySQL: systemctl restart mysql
+# Update users to be named for this bind IP
+# RENAME USER 'admin'@'localhost' TO 'admin'@'192.168.0.10';
+# Change settings in auth file(s) and site settings.py to use this IP for host instead of 'localhost'
+
+
+##### IMPORTANT: As of SPR6, the first run of the app will fail if the 'infoget_vsaauthtokens' table is empty
+# Create a placeholder row, it will get overwritten
+# In a future SPR this will be addressed by adding a check in infoget.views.home
+
+
+# At this point you can clone the repo to a local folder (e.g. /django-app-1)
+git clone git@github.com<>.git
+
+# Create a virtual environment and install all of the packages in the requirements file
+pip install -r requirements.txt
+
+# Chase down any errors in the pip oputput
+
+# Make the migrations
+python3 manage.py makemigrations
+python3 manage.py migrate
+
+##### IMPORTANT: Update ALLOWED_HOSTS in the site settings.py file
+# math the local server's IP
+
+# Run the app, this uses the Django built-in server bound to the local IP
+# This makes the site accessible from other computers on the network
+python3 manage.py runserver 0.0.0.0:8000
+
+###########################################
+
+# Install nginx with apt
+# Install gunicorn with pip
+
+# Configure gunicorn with these files
+/etc/systemd/system/gunicorn.socket
+/etc/systemd/system/gunicorn.service
+
+# Configure nginx with these
+/etc/nginx/nginx.conf
+/etc/nginx/sites-available/redshift-beta-1
+
+# Symlink to sites-enabled
+# /etc/nginx/sites-enabled/redshift-beta-1
+sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled
+
+##########################################
+
+# WHEN MOVING SERVERS
+Set a static IP: https://linuxize.com/post/how-to-configure-statis-ip-address-on-ubuntu-20-04/
+Update the ALLOWED_HOSTS in settings.py
+Update the MySQL bind address
+Update mysql users
+Update IP in /etc/nginx/sites-enabled/redeye-beta-1
+Update any ufw rules allowing port 3306

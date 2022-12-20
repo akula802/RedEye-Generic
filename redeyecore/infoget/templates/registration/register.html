@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 col-centered">
+        <h1 class="mt-5 mb-3">Register</h1>
+      </div>
+    </div> <!-- class row -->
+
+    <div class="row">
+      <div class="col-md-6 offset-md-3 mt-3">
+
+        <form method="post">
+          {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+              <!-- <p> -->
+                {{ field.label_tag }}<br>
+                {{ field }}
+                <!-- 
+                {% if field.help_text %}
+                  <small style="display: none">{{ field.help_text }}</small>
+                {% endif %}
+                -->
+                {% for error in field.errors %}
+                  <p style="color: red">{{ error }}</p>
+                {% endfor %}
+              <!-- </p> -->
+            </div>
+            {% endfor %}
+            <br />
+          <button type="submit" class="btn btn-primary mt-2">Register</button>
+        </form>
+
+      </div>
+    </div> <!-- class row -->
+
+
+    <!-- Show the Login link -->
+    <br />
+    <br />
+    <div class="row">
+      <div class="col-md-6 offset-md-3 mt-3">
+        <p>Already have an account? Please <b><a href="/login" class="link-info">log in</a></b>.</p>
+      </div>
+    </div>
+
+
+</div> <!-- class container -->
+
+{% endblock %}

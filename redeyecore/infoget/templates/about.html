@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+
+<!-- page title -->
+{% block title %} RedEye - About {% endblock %}
+
+
+<!-- main content -->
+{% block content %}
+
+<h2>About</h2>
+<br />
+<p>This is an app developed for the company by an industrious IT sysadmin.</p>
+<p>It collects data from several sources, aggregates it, and presents it in a few different ways. This helps us manage our day-to-day operations a little better.</p>
+<p>It's called 'RedEye' because it was built almost entirely between 9:00 PM and 2:00 AM, fueled by junk food and Irish whiskey. It's also like an 'eye' because, you know, it lets us see stuff that we couldn't before.</p>
+<p>Pretty cool, eh? I think it's cool.</p>
+
+<!-- Display some stuff if the user is logged in -->
+{% if user.is_authenticated %}
+	<!--
+	<p>But you are logged-in, so you can access all of it. Good for you.</p>
+	-->
+	<!-- logout button -->
+	<br />
+	<br />
+	<p>Got what you need? <b><a href="{% url 'logout' %}" class="link-info">Logout</a></b></p>
+
+
+<!-- Make the visitor log in or register -->
+{% else %}
+
+	<p>The site contents are not public, and you seem to be a stranger. So please <b><a href="/login" class="link-info">login</a></b>, or you can <b><a href="/register" class="link-info">register</a></b>.</p>
+
+{% endif %}
+
+{% endblock %}
+<!-- end main content -->

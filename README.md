@@ -23,3 +23,46 @@ The data is collected every 30 minutes, and there is currently a 91-day retentio
 The most recent collection set is served out as a new REST API at http://192.168.0.20/api/gate_servers
 
 To use the app, people had to register for a user account and get an auth token for the REST API.
+
+# API Returned Objects
+
+app_run_number = Integer (bigint) representing the run counter of the data collector. Each time the app goes out to collect data, this number increments by 1. Will be used to calculate uptime metrics.
+
+app_rmm_fetch_time = Timestamp of when the app connected to the Kaseya API.
+
+app_lob_fetch_time = Timestamp of when the app connected to the LOB app database.
+
+rmm_agent_id = The unique ID assigned to the gate PC agent in Kaseya. Used mainly for the custom field lookups.
+
+lob_computer_name = The name of the computer object in the LOB app database.
+
+rmm_lac_computer_name = A custom field in Kaseya, populated by a separate script (previously run). Contains a string lifted from a config file on the local machine, matching the 'lob_computer_name' value. This custom field ties the Kaseya computer object to the computer object in the LOB app database.
+
+rmm_computer_name = The hostname of the computer, as reported by Kaseya.
+
+rmm_agent_name = The Kaseya agent name is often different from the hostname. Helpful to track down computers that are not named following any standard format (e.g. there is a PC with a default / auto-generated hostname of DESKTOP-T1TSKQLH which is not helpful. But the agent name is Facility-1030.LOB.root which is more descriptive).
+
+lob_location = The PC's facility ID in the LOB app database (e.g. Facility 1030).
+
+rmm_lob_file_type = Another custom field in Kaseya, populated by a separate script (previously run). Contains a string value representing the name of a hardware vendor, for the machine the PC controls.
+
+rmm_last_reboot = Timestamp of the last reboot, retrieved from Kaseya.
+
+rmm_last_checkin = Timestamp of the last agent checkin to Kaseya. Useful for partial up/down status (e.g. rmm_last_checkin more than 10 minutes ago means the agent could be offline), and for tracking how long an agent goes offline for.
+
+lob_last_lob_update = Timestamp of the last time the LOB app service on the PC updated info from the LOB app on the Internet.
+
+lob_last_lob_query = Timestamp of the last time the LOB app service on the PC checked the LOB app for available updates.
+
+rmm_ram_mbytes = The amount of RAM the computer has, expressed in Mb, as reported by Kaseya.
+
+rmm_cpu_type = The CPU type reported by Kaseya (e.g. if we see values like ‘Atom’ or ‘Pentium’ it’s a sign the PC is super old).
+
+rmm_agent_is_offline = A boolean (true|false) of whether the agent is actively checking in to Kaseya. An on offline=true value means the agent is not checking in, and could be offline. This is a condition that must be alerted on an investigated.
+
+lob_agent_is_offline = A boolean (true|false) of whether the agent is querying the LOB app for code updates. An offline=true value means the LOB app service has not checked into the LOB app for 10+ minutes. Based on the timestamp in the ‘lob_last_lob_query’ value.
+
+rmm_uptime_score = A float representing the percentage of time the agent has been online and functional in Kaseya, covering the retention period of the database records (right now, it’s the past 91 days). A score of 100.00 means there were no problems. The math works like: [((# of app runs where rmm_agent_offline = False) / (# of total app runs for this agent)) x 100]
+
+lob_uptime_score = A float representing the percentage of time the agent has been online and functional in the LOB app, covering the retention period of the database records (right now, it’s the past 91 days). A score of 100.00 means there were no problems. The math works like: [((# of app runs where lob_agent_offline = False) / (# of total app runs for this agent)) x 100]
+

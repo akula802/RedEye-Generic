@@ -44,7 +44,7 @@ rmm_agent_name = The Kaseya agent name is often different from the hostname. Hel
 
 lob_location = The PC's facility ID in the LOB app database (e.g. Facility 1030).
 
-rmm_lob_file_type = Another custom field in Kaseya, populated by a separate script (previously run). Contains a string value representing the name of a hardware vendor, for the machine the PC controls.
+rmm_lac_file_type = Another custom field in Kaseya, populated by a separate script (previously run). Contains a string value representing the name of a hardware vendor, for the machine the PC controls.
 
 rmm_last_reboot = Timestamp of the last reboot, retrieved from Kaseya.
 

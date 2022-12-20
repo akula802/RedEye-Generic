@@ -16,7 +16,7 @@ Summary: Python+Django, running on an Ubuntu server, with Nginx and gunicorn. Th
 
 The app pulls gate PC information from the Kaseya API and an internal LOB app database.
 
-The Kaseya objects and the LOB app objects are tied together using a Custom Field in Kaseya. The Custom Field called 'custom_field_1' and contains a string value lifted from a config file on the Kaseya agent. It acts as a sort of foreign key to match the LOB data with the Kaseya agent data.
+The Kaseya objects and the LOB app objects are tied together using a Custom Field in Kaseya. The Custom Field called 'LAC-DeviceName' and contains a string value lifted from a config file on the Kaseya agent (in a separate script, previously run). It acts as a sort of foreign key to match the LOB data with the Kaseya agent data.
 
 The data is collected every 30 minutes, and there is currently a 91-day retention set via MySQL scheduled task.
 

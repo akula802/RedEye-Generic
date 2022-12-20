@@ -214,7 +214,7 @@ def get_vsa_and_lobapp_data():
 
 
             # Get the 'lac-DeviceName' Custom Field for the agent
-            # Get the VSA Custom Field called 'GCS-DeviceName' that ties the agents to the LOB app 'lob_app_computers' table
+            # Get the VSA Custom Field called 'LAC-DeviceName' that ties the agents to the LOB app 'lob_app_computers' table
             custom_field_query_url = 'https://realserverurl.kaseya.net/API/v1.0/assetmgmt/assets/{}/customfields'.format(agent['AgentId'])
             custom_field_request_object = infoget_classes.make_vsa_api_request(custom_field_query_url, existing_token)
             custom_field_request_result = custom_field_request_object.request_result_all()
@@ -236,7 +236,7 @@ def get_vsa_and_lobapp_data():
 
             if len(custom_field[1]['Result']) > 1:
                 # Get the rmm_lac_computer_name
-                # Depends on the '_' character being present in the GCS-DeviceName Custom Field
+                # Depends on the '_' character being present in the LAC-DeviceName Custom Field
                 for field_value in custom_field[1]['Result']:
                     if '_' in field_value['FieldValue']:
                     # if 'rd' in field_value['FieldValue']:  # better way then checking for '_'?

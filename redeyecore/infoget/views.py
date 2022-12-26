@@ -129,7 +129,7 @@ def home(request):
 
 
     # New empty lists to hold info for home page display
-    agents_with_redline_issues = []
+    agents_with_lobapp_issues = []
     agents_with_kaseya_issues = []
     agents_totally_offline = []
     agents_missing_custom_field = []
@@ -166,14 +166,14 @@ def home(request):
 
     # Got a cursor, now get the existing auth token from the database via SELECT query
     app_db_cursor.reset()
-    app_db_cursor.execute("SELECT MAX(app_run_number) FROM redshift.infoget_lobservers")
+    app_db_cursor.execute("SELECT MAX(app_run_number) FROM redeye.infoget_lobservers")
     app_run_number = str(app_db_cursor.fetchone()[0])
 
 
     # Get VSA agents missing the GCS Custom Fields
     # These need to have the GCS scripts run on them
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, rmm_gcc_file_type, rmm_gcc_computer_name, rmm_last_checkin FROM redshift.infoget_lobservers WHERE app_run_number = {} AND ((rmm_gcc_file_type IS NULL OR rmm_gcc_file_type = '') OR (rmm_gcc_computer_name IS NULL OR rmm_gcc_computer_name = ''))".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, rmm_gcc_file_type, rmm_gcc_computer_name, rmm_last_checkin FROM redeye.infoget_lobservers WHERE app_run_number = {} AND ((rmm_gcc_file_type IS NULL OR rmm_gcc_file_type = '') OR (rmm_gcc_computer_name IS NULL OR rmm_gcc_computer_name = ''))".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
     agents_with_custom_field_problems = app_db_cursor.fetchall()
     agents_missing_custom_field.append(agents_with_custom_field_problems)
@@ -181,21 +181,21 @@ def home(request):
 
 
 
-    # Get LOB servers that are offline in Redline, but online in Kaseya
+    # Get LOB servers that are offline in LOB app, but online in Kaseya
     # These need to have the AppService restarted and checked
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, red_location, red_last_lob_query, red_last_lob_update  FROM redshift.infoget_lobservers WHERE app_run_number = {} AND (red_agent_is_offline = TRUE AND rmm_agent_is_offline = FALSE) ORDER BY red_last_lob_query ASC".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, lob_location, lob_last_lob_query, lob_last_lob_update  FROM redeye.infoget_lobservers WHERE app_run_number = {} AND (lob_agent_is_offline = TRUE AND rmm_agent_is_offline = FALSE) ORDER BY lob_last_lob_query ASC".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
-    redline_issues = app_db_cursor.fetchall()
-    agents_with_redline_issues.append(redline_issues)
-    agents_with_redline_issues_count = len(agents_with_redline_issues[0])
+    lobapp_issues = app_db_cursor.fetchall()
+    agents_with_lobapp_issues.append(lobapp_issues)
+    agents_with_lobapp_issues_count = len(agents_with_lobapp_issues[0])
 
 
 
-    # Get LOB servers that are offline in Kaseya, but online in Redline
+    # Get LOB servers that are offline in Kaseya, but online in LOB app
     # These need to be rebooted by an FS
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, red_location, rmm_last_checkin, red_last_lob_query  FROM redshift.infoget_lobservers WHERE app_run_number = {} AND (red_agent_is_offline = FALSE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, lob_location, rmm_last_checkin, lob_last_lob_query  FROM redeye.infoget_lobservers WHERE app_run_number = {} AND (lob_agent_is_offline = FALSE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
     kaseya_issues = app_db_cursor.fetchall()
     agents_with_kaseya_issues.append(kaseya_issues)
@@ -203,10 +203,10 @@ def home(request):
 
 
 
-    # Get LOB servers that are offline in Kaseya AND offline in Redline
+    # Get LOB servers that are offline in Kaseya AND offline in LOB app
     # These need to be investigated for ISP issues, etc
     app_db_cursor.reset()
-    cf_query_string = "SELECT rmm_agent_name, red_location, rmm_last_checkin, red_last_lob_query  FROM redshift.infoget_lobservers WHERE app_run_number = {} AND (red_agent_is_offline = TRUE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
+    cf_query_string = "SELECT rmm_agent_name, lob_location, rmm_last_checkin, lob_last_lob_query  FROM redeye.infoget_lobservers WHERE app_run_number = {} AND (lob_agent_is_offline = TRUE AND rmm_agent_is_offline = TRUE) ORDER BY rmm_last_checkin ASC".format(app_run_number)
     app_db_cursor.execute(cf_query_string)
     totally_offline = app_db_cursor.fetchall()
     agents_totally_offline.append(totally_offline)
@@ -220,12 +220,12 @@ def home(request):
     # Build the context
     context = {
         'app_db_connect_error': app_db_connect_error,
-        #'redline_db_connect_error': redline_db_connect_error,
+        #'lobapp_db_connect_error': lobapp_db_connect_error,
         'app_run_number': app_run_number,
         'agents_missing_custom_field': agents_missing_custom_field,
         'agents_missing_custom_field_count': agents_missing_custom_field_count,
-        'agents_with_redline_issues': agents_with_redline_issues,
-        'agents_with_redline_issues_count': agents_with_redline_issues_count,
+        'agents_with_lobapp_issues': agents_with_lobapp_issues,
+        'agents_with_lobapp_issues_count': agents_with_lobapp_issues_count,
         'agents_with_kaseya_issues': agents_with_kaseya_issues,
         'agents_with_kaseya_issues_count': agents_with_kaseya_issues_count,
         'agents_totally_offline': agents_totally_offline,
